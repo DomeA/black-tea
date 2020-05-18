@@ -20,6 +20,7 @@ const webpackTestConfig = {
             {
                 test: /\.js?$/,
                 exclude: /node_modules|bower_components/,
+                //@babel/polyfill 不能有include ES7 polyfill在加入index.js头部后，会无法识别 # 符号
                 //include: [path.join(__dirname, 'src'), path.join(__dirname, 'test')],
                 use: [
                     {
@@ -47,32 +48,3 @@ const webpackTestConfig = {
     ]
 };
 module.exports = webpackTestConfig;
-
-// webpack: {
-//     mode: 'development',
-//     // 入口文件配置
-//     resolve: {
-//         extensions: ['.js'], // 当requrie的模块找不到时,添加这些后缀
-//     },
-//     plugins: [
-//         new CleanWebpackPlugin({cleanAfterEveryBuildPatterns:["./test/coverage"]}),
-//         new webpack.ProvidePlugin({
-//             'Promise': 'es6-promise'
-//         }),
-//         new webpack.DefinePlugin({
-//             'process.env': {
-//                 VERSION: JSON.stringify(version)
-//             }
-//         })
-//     ],
-//     module: {
-//         rules: [
-//             {
-//                 test: /\.js?$/,
-//                 use: ['babel-loader'],
-//                 exclude: /(node_modules|bower_components)/,
-//                 include: [path.join(__dirname, 'src'), path.join(__dirname, 'test')]
-//             }
-//         ]
-//     }
-// },
