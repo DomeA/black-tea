@@ -12,3 +12,6 @@ ES6或ES7由于babel转换语法，导致测试覆盖率极低。
 
 # 测试浏览器
 支持Chrome或phantomjs
+
+# e2e 模拟用户操作测试
+集成nightwatch和 selenium
