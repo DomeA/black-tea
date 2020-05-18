@@ -1,7 +1,5 @@
-const webpack = require('webpack');
 const path = require('path');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const { version } = require('./package.json');
+const webpackConfig = require('./build/webpack.jasmine.test.conf');
 module.exports = function (config) {
     config.set({
         // 将用于解决所有的模式基本路径（例如，文件，排除）
@@ -36,43 +34,48 @@ module.exports = function (config) {
             "src/**/*.js",
             'test/**/*.spec.js'
         ],
-
-        // 使用端口
-        port: 9876,
-
-        // 是否在输出日志中使用颜色
-        colors: true,
-
-        // 持续集成模式: 配置为true 将会持续运行测试, 直致完成返回0(成功)或1(失败). 示例: Done. Your build exited with 0.
-        singleRun: true,
-
-
-        // 日志级别
-        // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-        logLevel: config.LOG_LOG,
-
-        // 是否监听文件变化
-        autoWatch: true,
-
-        // 配置启动单元测试的环境
-        browsers: ["Chrome"],
-
-        // 捕获浏览器的超时时间
-        captureTimeout: 60000,
-
-        // coverage reporter generates the coverage
-        reporters: ['progress', 'coverage'],
+        exclude: [
+            'node_modules/**/*.test.js',
+            'node_modules/**/*.spec.js'
+        ],
         preprocessors: {
             "src/**/*.js": ["webpack",'coverage','sourcemap'], //表示那些代码需要生成测试覆盖率报表
-            'test/unit/index.jasmine.js': ['webpack','coverage'],
-            "test/**/*.spec.js": ["webpack",'coverage','sourcemap']
+            'test/unit/index.jasmine.js': ['webpack'],
+            "test/**/*.spec.js": ["webpack"]
         },
-        // 预处理
-        // preprocessors: {
-        //     // src/module/**/*.js 在由 test/*_test.js 中调用时就会使用webpack打包, 所以 src/**/*.js 不需要通过 webpack 进行打包.
-        //     'src/**/*.js': ['coverage', 'webpack', 'sourcemap'],
-        //     'test/**/*.spec.js': ['webpack']
-        // },
+
+        webpack:webpackConfig,
+        coverageIstanbulReporter: {
+            // reports can be any that are listed here: https://github.com/istanbuljs/istanbuljs/tree/aae256fb8b9a3d19414dcf069c592e88712c32c6/packages/istanbul-reports/lib
+            reports: ['html', 'lcovonly', 'text-summary'],
+            // base output directory. If you include %browser% in the path it will be replaced with the karma browser name
+            dir: path.join(__dirname, 'test/coverage'),
+            // Combines coverage information from multiple browsers into one report rather than outputting a report
+            // for each browser.
+            combineBrowserReports: true,
+            // if using webpack and pre-loaders, work around webpack breaking the source path
+            fixWebpackSourcePaths: true,
+            // Omit files with no statements, no functions and no branches from the report
+            skipFilesWithNoCoverage: true,
+            // Most reporters accept additional config options. You can pass these through the `report-config` option
+            'report-config': {
+                // all options available at: https://github.com/istanbuljs/istanbuljs/blob/aae256fb8b9a3d19414dcf069c592e88712c32c6/packages/istanbul-reports/lib/html/index.js#L135-L137
+                html: {
+                    // outputs the report in ./coverage/html
+                    subdir: 'html'
+                }
+            }
+        },
+
+        reporters: ["dots",'kjhtml',"progress", 'coverage', 'coverage-istanbul'],
+        port: 9876,
+        colors: true,
+        browserNoActivityTimeout:400000,
+        // 捕获浏览器的超时时间
+        captureTimeout: 60000,
+        webpackServer:{
+            noInfo: true
+        },
         // optionally, configure the reporter
         coverageReporter: {
             dir: 'test/coverage',
@@ -83,40 +86,17 @@ module.exports = function (config) {
                 {type: 'text',file:"coverageReporter.txt"}
             ]
         },
-
-        // webpack config: https://github.com/webpack-contrib/karma-webpack
-        webpack: {
-            mode: 'development',
-            // 入口文件配置
-            resolve: {
-                extensions: ['.js'], // 当requrie的模块找不到时,添加这些后缀
-            },
-            plugins: [
-                new CleanWebpackPlugin({cleanAfterEveryBuildPatterns:["./test/coverage"]}),
-                new webpack.ProvidePlugin({
-                    'Promise': 'es6-promise'
-                }),
-                new webpack.DefinePlugin({
-                    'process.env': {
-                        VERSION: JSON.stringify(version)
-                    }
-                })
-            ],
-            module: {
-                rules: [
-                    {
-                        test: /\.js?$/,
-                        use: ['babel-loader'],
-                        exclude: /(node_modules|bower_components)/,
-                        include: [path.join(__dirname, 'src'), path.join(__dirname, 'test')]
-                    }
-                ]
+        customLaunchers: {
+            'visibleElectron': {
+                base: 'Electron',
+                flags: ['--show']
             }
         },
-
         webpackMiddleware: {noInfo: false}, // no webpack output
-
-        // Karma有多少个浏览器并行启动
+        logLevel: config.LOG_LOG,
+        autoWatch: true,
+        browsers: ['Chrome'],
+        singleRun: false,
         concurrency: Infinity
     });
 };
