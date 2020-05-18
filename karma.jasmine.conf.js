@@ -21,9 +21,19 @@ module.exports = function (config) {
             suppressFailed: true // Suppress failed messages
         },
         frameworks: ['jasmine'],
-
+        plugins: [
+            'karma-webpack',
+            'karma-jasmine',
+            'karma-chrome-launcher',
+            'karma-jasmine-html-reporter',
+            "karma-coverage",
+            'karma-coverage-istanbul-reporter',
+            "karma-sourcemap-loader",
+            "istanbul-instrumenter-loader"
+        ],
         // 需要测试的文件列表
         files: [
+            "src/**/*.js",
             'test/**/*.spec.js'
         ],
 
@@ -45,20 +55,24 @@ module.exports = function (config) {
         autoWatch: true,
 
         // 配置启动单元测试的环境
-        browsers: ["Chrome",'PhantomJS'],
+        browsers: ["Chrome"],
 
         // 捕获浏览器的超时时间
         captureTimeout: 60000,
 
         // coverage reporter generates the coverage
         reporters: ['progress', 'coverage'],
-
-        // 预处理
         preprocessors: {
-            // src/module/**/*.js 在由 test/*_test.js 中调用时就会使用webpack打包, 所以 src/**/*.js 不需要通过 webpack 进行打包.
-            'src/**/*.js': ['coverage', 'webpack', 'sourcemap'],
-            'test/**/*.spec.js': ['webpack']
+            "src/**/*.js": ["webpack",'coverage','sourcemap'], //表示那些代码需要生成测试覆盖率报表
+            'test/unit/index.jasmine.js': ['webpack','coverage'],
+            "test/**/*.spec.js": ["webpack",'coverage','sourcemap']
         },
+        // 预处理
+        // preprocessors: {
+        //     // src/module/**/*.js 在由 test/*_test.js 中调用时就会使用webpack打包, 所以 src/**/*.js 不需要通过 webpack 进行打包.
+        //     'src/**/*.js': ['coverage', 'webpack', 'sourcemap'],
+        //     'test/**/*.spec.js': ['webpack']
+        // },
         // optionally, configure the reporter
         coverageReporter: {
             dir: 'test/coverage',
