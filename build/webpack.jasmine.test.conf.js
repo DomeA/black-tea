@@ -37,9 +37,6 @@ const webpackTestConfig = {
     plugins: [
         new HotModuleReplacementPlugin(),
         new CleanWebpackPlugin({cleanAfterEveryBuildPatterns: ["./test/coverage"]}),
-        // new webpack.ProvidePlugin({
-        //     'Promise': 'es6-promise'
-        // }),
         new webpack.DefinePlugin({
             'process.env': {
                 VERSION: JSON.stringify(pkg.version)
