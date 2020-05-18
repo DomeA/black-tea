@@ -9,3 +9,6 @@ karma 配合jasmine 和 mocha+chai
 
 #测试覆盖率
 ES6或ES7由于babel转换语法，导致测试覆盖率极低。
+
+#测试浏览器
+支持Chrome或phantomjs
