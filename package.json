@@ -1,0 +1,39 @@
+{
+  "name": "mappingo",
+  "version": "1.0.0",
+  "description": "客户端类库",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "report-coverage": "codecov",
+    "server-start": "node server",
+    "lint": "eslint src",
+    "postversion": "git push && git push --tags",
+    "selenium-setup": "node build/selenium.setup.js",
+    "selenium-start": "node ./build/selenium.start.js",
+    "test-e2e": "node startup.js",
+    "test-jasmine": "NODE_ENV=test karma start karma.jasmine.conf.js",
+    "test-mocha": "NODE_ENV=test karma start karma.mocha.conf.js",
+    "build-dev": "webpack-dev-server --open --mode development --config build/webpack.base.conf.js --progress --colors",
+    "build-prod": "webpack -p --mode production --config build/webpack.base.conf.js --progress --colors"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DomeA/black-tea.git"
+  },
+  "author": "DomeA",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DomeA/black-tea/issues"
+  },
+  "homepage": "https://github.com/DomeA/black-tea#readme",
+  "devDependencies": {
+    "@babel/core": "^7.9.6",
+    "codecov": "^3.6.5",
+    "karma": "^5.0.7",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11"
+  }
+}
