@@ -3,7 +3,6 @@ const webpack = require("webpack");
 const path = require("path");
 const pkg = require("../package.json");
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const DashboardPlugin = require('webpack-dashboard/plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const {CleanWebpackPlugin} = require('clean-webpack-plugin');
@@ -24,6 +23,13 @@ const webpackBaseConfig = {
         path: path.resolve(rootPath, "dist"),
         library: pkg.name,
         libraryTarget: "umd"
+    },
+    resolve:{
+        extensions: ['.js', '.css'],
+        alias:{
+            '@':path.join(__dirname,'src'),
+            '@static':path.join(__dirname,'static')
+        }
     },
     module: {
         rules: [
@@ -56,12 +62,22 @@ const webpackBaseConfig = {
                 exclude: /node_modules|bower_components/,
             },
             {
-                test: /\.css$/,
-                use: [{
-                    loader: "style-loader"
-                }, {
-                    loader: "css-loader"
-                }]
+                test:/\.(sa|sc|c)ss$/,
+                use: [
+                    {
+                        loader: MiniCssExtractPlugin.loader,
+                        options: {}
+                    },
+                    {
+                        loader: "css-loader" // 将 CSS 转化成 CommonJS 模块
+                    },
+                    {
+                        loader: "sass-loader" // 将 Sass 编译成 CSS
+                    },
+                    {
+                        loader: "postcss-loader" // 将 Sass 编译成 CSS
+                    }
+                ]
             },
             {
                 test: /\.(png|jpg)$/,
@@ -84,6 +100,15 @@ const webpackBaseConfig = {
         new MiniCssExtractPlugin({
             filename: pkg.name + '.css',
             chunkFilename: '[id].css'
+        }),
+        new OptimizeCssAssetsPlugin({
+            assetNameRegExp: /\.style\.css$/g,
+            cssProcessor: require('cssnano'),
+            cssProcessorOptions: {
+                discardComments: {removeAll: true},
+                minifyGradients: true
+            },
+            canPrint: true
         }),
         // 配置环境变量
         new webpack.DefinePlugin({
@@ -116,16 +141,6 @@ const webpackBaseConfig = {
                     sourceMap: true,
                     warnings: false
                 }
-            }),
-            // 压缩css
-            new OptimizeCssAssetsPlugin({
-                assetNameRegExp: /\.css$/g,
-                cssProcessor: require('cssnano'),
-                cssProcessorOptions: {
-                    discardComments: {removeAll: true},
-                    minifyGradients: true
-                },
-                canPrint: true
             })
         ]
     }
