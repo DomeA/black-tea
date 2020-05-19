@@ -3,10 +3,12 @@ const webpack = require("webpack");
 const path = require("path");
 const pkg = require("../package.json");
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const DashboardPlugin = require('webpack-dashboard/plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
 const rootPath = path.resolve(__dirname, "../");
 
@@ -15,16 +17,30 @@ function resolve(dir) {
 }
 
 const webpackBaseConfig = {
-    entry: ["@babel/polyfill",path.resolve(rootPath, "src", "index.js")],
-    devtool: 'inline-source-map',
+    entry: ["@babel/polyfill", path.resolve(rootPath, "src", "index.js")],
+    //devtool: 'inline-source-map',
     output: {
-        filename: pkg.name+ ".min.js",
+        filename: pkg.name + ".min.js",
         path: path.resolve(rootPath, "dist"),
         library: pkg.name,
         libraryTarget: "umd"
     },
     module: {
         rules: [
+            {
+                enforce: 'pre',
+                test: /\.js$/,
+                include: [path.join(__dirname, 'src')],
+                exclude:  /node_modules|bower_components/,
+                use: [
+                    {
+                        loader: 'eslint-loader',
+                        options: {
+                            formatter: require('eslint-friendly-formatter')
+                        }
+                    }
+                ]
+            },
             {
                 test: /\.js$/,
                 loader: 'babel-loader',
@@ -37,7 +53,7 @@ const webpackBaseConfig = {
                     options: {esModules: true}
                 },
                 enforce: 'post',
-                exclude: /node_modules|\.spec\.js$/,
+                exclude: /node_modules|bower_components/,
             },
             {
                 test: /\.css$/,
@@ -64,6 +80,17 @@ const webpackBaseConfig = {
     },
     plugins: [
         new DashboardPlugin(),
+        // 将样式文件 抽取至独立文件内
+        new MiniCssExtractPlugin({
+            filename: pkg.name + '.css',
+            chunkFilename: '[id].css'
+        }),
+        // 配置环境变量
+        new webpack.DefinePlugin({
+            'process.env': {
+                VERSION: JSON.stringify(pkg.version)
+            }
+        }),
         new HtmlWebpackPlugin({
             title: 'Output Management',
             minify: {
@@ -72,7 +99,7 @@ const webpackBaseConfig = {
             // 添加hash
             hash: true,
             template: path.resolve(rootPath, "src", "../public/index.html") //使用模板 必须有模板文件
-        }),
+        }),// https://www.npmjs.com/package/webpack-bundle-analyzer
         new CleanWebpackPlugin(),
         new webpack.HotModuleReplacementPlugin()//热模块替换插件
     ],
@@ -80,13 +107,25 @@ const webpackBaseConfig = {
         minimize: true,
         minimizer: [
             new UglifyJSPlugin({
-                sourceMap: true,
-                parallel: true,
                 uglifyOptions: {
                     comments: false,
                     beautify: false,
-                    output: null
+                    output: null,
+                    cache: true,
+                    parallel: true,
+                    sourceMap: true,
+                    warnings: false
                 }
+            }),
+            // 压缩css
+            new OptimizeCssAssetsPlugin({
+                assetNameRegExp: /\.css$/g,
+                cssProcessor: require('cssnano'),
+                cssProcessorOptions: {
+                    discardComments: {removeAll: true},
+                    minifyGradients: true
+                },
+                canPrint: true
             })
         ]
     }
